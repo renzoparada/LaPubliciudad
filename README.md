@@ -8,7 +8,7 @@ Web app donde los clientes potenciales completan el **brief de marketing y comun
 - **Alcance y cotización**: módulos sugeridos (lo que pidió el cliente + lo que recomienda el diagnóstico) con horas editables y tarifa.
 - **Propuesta estratégica con IA** (Claude): un borrador completo de la propuesta en Markdown, listo para la presentación.
 
-El cliente, al terminar, solo ve un mensaje de agradecimiento: el diagnóstico, la estrategia y la cotización quedan únicamente en el panel de la agencia.
+El cliente, al terminar, solo ve un mensaje de agradecimiento (si el envío falla, el navegador lo reintenta solo): el diagnóstico, la estrategia y la cotización quedan únicamente en el panel de la agencia.
 
 Los cambios respecto al brief original están en [docs/brief-mejorado.md](docs/brief-mejorado.md).
 
@@ -36,8 +36,9 @@ npm run build
 | Variable | Uso |
 |---|---|
 | `ANTHROPIC_API_KEY` | Necesaria para “Propuesta con IA”. Solo se usa en el servidor. |
-| `AGENCY_ACCESS_KEY` | Recomendada: clave que pide el panel para generar propuestas con IA (evita que terceros usen tu cuota). |
-| `BRIEF_WEBHOOK_URL` | URL que recibe cada brief enviado (Make, Zapier, n8n, Google Apps Script). Desde ahí puedes mandarlo a tu email, a Google Sheets o a tu CRM. Sin ella, el cliente ve un aviso y descarga su copia para enviarla por email. |
+| `AGENCY_ACCESS_KEY` | Clave que pide el panel para ver los briefs recibidos y generar propuestas con IA. |
+| `BLOB_READ_WRITE_TOKEN` | Lo crea Vercel al conectar un Blob store al proyecto. Guarda cada brief de forma privada; el panel los muestra con “Ver briefs recibidos”. |
+| `BRIEF_WEBHOOK_URL` | Opcional: URL que recibe cada brief enviado (Make, Zapier, n8n) para avisarte por email, Google Sheets o tu CRM. |
 
 ## Publicación (Vercel)
 
@@ -59,6 +60,7 @@ src/brief/schema.ts      Preguntas del brief (editar aquí para cambiar pregunta
 src/engine/diagnosis.ts  Reglas del diagnóstico
 src/engine/strategy.ts   Reglas de estrategia, herramientas y alcance
 src/pages/               Formulario, página de gracias y panel de agencia
-api/submit.ts            Recibe el brief y lo reenvía al webhook
+api/submit.ts            Recibe el brief, lo guarda en Vercel Blob y avisa al webhook
+api/briefs.ts            Lista los briefs recibidos para el panel (con clave)
 api/strategy.ts          Genera la propuesta con Claude (streaming)
 ```

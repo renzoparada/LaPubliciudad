@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FieldInput } from "../components/FieldInput";
 import { visibleSections } from "../brief/schema";
 import type { AnswerValue, BriefSubmission, Field, Section } from "../brief/types";
-import { clearDraft, saveDraft } from "../brief/storage";
+import { clearDraft, saveDraft, submitBrief } from "../brief/storage";
 import { navigate } from "../router";
 
 const isEmpty = (v: AnswerValue) => v === undefined || v === "" || (Array.isArray(v) && v.length === 0);
@@ -23,7 +23,7 @@ function validate(section: Section, answers: BriefSubmission["answers"]): Record
   return errors;
 }
 
-export function BriefWizard({ initial, onSubmitted }: { initial: BriefSubmission; onSubmitted: (s: BriefSubmission, delivered: boolean) => void }) {
+export function BriefWizard({ initial, onSubmitted }: { initial: BriefSubmission; onSubmitted: (s: BriefSubmission) => void }) {
   const [sub, setSub] = useState(initial);
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -72,21 +72,12 @@ export function BriefWizard({ initial, onSubmitted }: { initial: BriefSubmission
       }
     }
     setSending(true);
-    let delivered = true;
     const final: BriefSubmission = { ...sub, submittedAt: new Date().toISOString() };
-    try {
-      const res = await fetch("/api/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(final) });
-      const json = (await res.json().catch(() => ({}))) as { forwarded?: boolean };
-      if (!res.ok || !json.forwarded) throw new Error(`No entregado (${res.status})`);
-    } catch (err) {
-      // Si el servidor no está disponible, igualmente guardamos y mostramos el resultado:
-      // el cliente puede descargar su copia y enviarla.
-      console.warn("No se pudo enviar el brief al servidor", err);
-      delivered = false;
-    }
+    // Si falla, el brief queda en cola en este navegador y se reenvía automáticamente.
+    await submitBrief(final);
     clearDraft();
     setSending(false);
-    onSubmitted(final, delivered);
+    onSubmitted(final);
     navigate("/gracias");
   };
 

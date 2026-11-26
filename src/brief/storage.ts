@@ -64,3 +64,40 @@ export function parseSubmission(text: string): BriefSubmission {
   if (!data || typeof data !== "object" || typeof data.answers !== "object") throw new Error("El archivo no es un brief válido.");
   return { ...emptySubmission(), ...data };
 }
+
+// --- Envío con reintentos: si falla, el brief queda en cola en el navegador y se reenvía solo ---
+const PENDING_KEY = "lp_pending_briefs_v1";
+
+const loadPending = (): BriefSubmission[] => safe(() => JSON.parse(localStorage.getItem(PENDING_KEY) || "[]") as BriefSubmission[], []);
+const savePending = (list: BriefSubmission[]) => safe(() => localStorage.setItem(PENDING_KEY, JSON.stringify(list)), undefined);
+
+async function postOnce(s: BriefSubmission): Promise<boolean> {
+  try {
+    const res = await fetch("/api/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(s), keepalive: true });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Envía el brief con hasta 3 intentos. Si no se logra, lo deja en cola para reenviarlo después. */
+export async function submitBrief(s: BriefSubmission): Promise<boolean> {
+  savePending([...loadPending().filter((x) => x.id !== s.id), s]);
+  for (const delay of [0, 1500, 4000]) {
+    if (delay) await wait(delay);
+    if (await postOnce(s)) {
+      savePending(loadPending().filter((x) => x.id !== s.id));
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Reintenta en segundo plano los briefs que quedaron en cola (se llama al abrir la app). */
+export async function flushPending() {
+  for (const s of loadPending()) {
+    if (await postOnce(s)) savePending(loadPending().filter((x) => x.id !== s.id));
+  }
+}

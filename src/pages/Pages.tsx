@@ -72,23 +72,14 @@ export function Landing({ hasDraft, onStart, onResume }: { hasDraft: boolean; on
   );
 }
 
-export function ThankYou({ sub, delivered }: { sub: BriefSubmission | null; delivered: boolean }) {
+export function ThankYou({ sub }: { sub: BriefSubmission | null }) {
   const nombre = String(sub?.answers.contacto_nombre || "").split(" ")[0];
   return (
     <div className="center-page thanks-page">
       <p className="eyebrow">Brief recibido</p>
       <h1>¡Gracias por completar la información{nombre ? `, ${nombre}` : ""}! 🙌</h1>
-      <p className="lead">
-        {delivered || !sub
-          ? "Nuestro equipo revisará tus respuestas y se pondrá en contacto contigo muy pronto."
-          : "No pudimos enviar tus respuestas automáticamente. Descarga tu copia y envíanosla por email; con eso ya podemos empezar."}
-      </p>
+      <p className="lead">Nuestro equipo revisará tus respuestas y se pondrá en contacto contigo muy pronto.</p>
       <div className="hero-cta">
-        {sub && !delivered && (
-          <button className="btn primary" onClick={() => downloadJson(sub)}>
-            Descargar mi copia
-          </button>
-        )}
         <button className="btn ghost" onClick={() => navigate("/")}>
           Volver al inicio
         </button>
@@ -111,6 +102,39 @@ export function Agency() {
   const [current, setCurrent] = useState<BriefSubmission | null>(lib[0] ?? null);
   const [tab, setTab] = useState<(typeof TABS)[number][0]>("diagnostico");
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [key, setKey] = useState(() => {
+    try {
+      return sessionStorage.getItem("lp_agency_key") || "";
+    } catch {
+      return "";
+    }
+  });
+
+  const loadReceived = async () => {
+    setErr("");
+    setLoading(true);
+    try {
+      try {
+        sessionStorage.setItem("lp_agency_key", key);
+      } catch {
+        /* sin almacenamiento */
+      }
+      const res = await fetch("/api/briefs", { headers: { "x-agency-key": key } });
+      if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
+      const { briefs } = (await res.json()) as { briefs: BriefSubmission[] };
+      // Se agregan en orden inverso para que el más reciente quede primero.
+      [...briefs].reverse().forEach((b) => saveToLibrary(b));
+      const l = loadLibrary();
+      setLib(l);
+      if (!current && l[0]) setCurrent(l[0]);
+      if (!briefs.length) setErr("Todavía no hay briefs recibidos.");
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "No se pudieron cargar los briefs.");
+    } finally {
+      setLoading(false);
+    }
+  };
   const fileRef = useRef<HTMLInputElement>(null);
   const strategy = useMemo(() => (current ? buildStrategy(current.answers) : null), [current]);
 
@@ -139,7 +163,11 @@ export function Agency() {
           <span className="muted">Briefs en este navegador</span>
         </div>
         <div className="agency-actions">
-          <button className="btn primary sm" onClick={() => fileRef.current?.click()}>
+          <input type="password" placeholder="Clave de agencia" value={key} onChange={(e) => setKey(e.target.value)} aria-label="Clave de agencia" />
+          <button className="btn primary sm" onClick={loadReceived} disabled={loading}>
+            {loading ? "Cargando…" : "Ver briefs recibidos"}
+          </button>
+          <button className="btn ghost sm" onClick={() => fileRef.current?.click()}>
             Importar brief (.json)
           </button>
           <input ref={fileRef} type="file" accept="application/json,.json" multiple hidden onChange={(e) => onFiles(e.target.files)} />
@@ -161,7 +189,7 @@ export function Agency() {
             </li>
           ))}
         </ol>
-        {lib.length === 0 && <p className="muted small">Importa un brief enviado por un cliente o carga el ejemplo para probar.</p>}
+        {lib.length === 0 && <p className="muted small">Escribe la clave de agencia y pulsa “Ver briefs recibidos”, o carga el ejemplo para probar.</p>}
       </aside>
 
       <main className="report">

@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRoute, navigate } from "./router";
 import { BriefWizard } from "./pages/BriefWizard";
 import { Agency, Landing, ThankYou } from "./pages/Pages";
-import { clearDraft, emptySubmission, loadDraft } from "./brief/storage";
+import { clearDraft, emptySubmission, flushPending, loadDraft } from "./brief/storage";
 import type { BriefSubmission } from "./brief/types";
 
 export default function App() {
   const route = useRoute();
   const [draft, setDraft] = useState<BriefSubmission | null>(loadDraft);
-  const [submitted, setSubmitted] = useState<{ sub: BriefSubmission; delivered: boolean } | null>(null);
+  const [submitted, setSubmitted] = useState<BriefSubmission | null>(null);
+  // Reenvía briefs que no se pudieron enviar en una visita anterior.
+  useEffect(() => {
+    flushPending();
+  }, []);
 
   const start = () => {
     clearDraft();
@@ -23,13 +27,13 @@ export default function App() {
       <BriefWizard
         key={draft?.id ?? "new"}
         initial={draft ?? emptySubmission()}
-        onSubmitted={(sub, delivered) => {
-          setSubmitted({ sub, delivered });
+        onSubmitted={(sub) => {
+          setSubmitted(sub);
           setDraft(null);
         }}
       />
     );
-  else if (route.startsWith("/gracias")) page = <ThankYou sub={submitted?.sub ?? null} delivered={submitted?.delivered ?? false} />;
+  else if (route.startsWith("/gracias")) page = <ThankYou sub={submitted} />;
   else page = <Landing hasDraft={!!draft && Object.keys(draft.answers).length > 0} onStart={start} onResume={() => navigate("/brief")} />;
 
   return (
