@@ -8,7 +8,7 @@ export async function GET(request: Request): Promise<Response> {
   const key = process.env.AGENCY_ACCESS_KEY;
   if (!key) return new Response("Configura AGENCY_ACCESS_KEY en el servidor para ver los briefs recibidos.", { status: 503 });
   if (request.headers.get("x-agency-key") !== key) return new Response("Clave de agencia incorrecta.", { status: 401 });
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return new Response("El almacenamiento de briefs no está conectado.", { status: 503 });
+  if (!(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID)) return new Response("El almacenamiento de briefs no está conectado.", { status: 503 });
 
   const blobs = [];
   let cursor: string | undefined;

@@ -37,7 +37,7 @@ npm run build
 |---|---|
 | `ANTHROPIC_API_KEY` | Necesaria para “Propuesta con IA”. Solo se usa en el servidor. |
 | `AGENCY_ACCESS_KEY` | Clave que pide el panel para ver los briefs recibidos y generar propuestas con IA. |
-| `BLOB_READ_WRITE_TOKEN` | Lo crea Vercel al conectar un Blob store al proyecto. Guarda cada brief de forma privada; el panel los muestra con “Ver briefs recibidos”. |
+| `BLOB_STORE_ID` (o `BLOB_READ_WRITE_TOKEN`) | Lo crea Vercel al conectar un Blob store al proyecto. Guarda cada brief de forma privada; el panel los muestra con “Ver briefs recibidos”. |
 | `BRIEF_WEBHOOK_URL` | Opcional: URL que recibe cada brief enviado (Make, Zapier, n8n) para avisarte por email, Google Sheets o tu CRM. |
 
 ## Publicación (Vercel)

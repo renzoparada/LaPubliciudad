@@ -28,7 +28,7 @@ export async function POST(request: Request): Promise<Response> {
   let stored = false;
   let forwarded = false;
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if ((process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID)) {
     try {
       // Mismo id => misma ruta: un reintento del navegador no duplica el brief.
       await put(`briefs/${id}.json`, JSON.stringify(record), {
