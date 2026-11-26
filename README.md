@@ -45,6 +45,13 @@ npm run build
 2. Configura las variables de entorno de arriba.
 3. Publica. Las funciones de `api/` quedan en `/api/submit` y `/api/strategy`.
 
+### Enlace para clientes sin nombres personales
+
+- Nombra el proyecto de Vercel con un nombre neutro (por ejemplo `brief-lapubliciudad`): la dirección de producción será `brief-lapubliciudad.vercel.app`.
+- Comparte con los clientes **solo** la dirección de producción o un dominio propio (por ejemplo `brief.lapubliciudad.com`, en Vercel → Settings → Domains).
+- No compartas las direcciones de vista previa de Vercel (las que terminan en `-<cuenta>-projects.vercel.app`): incluyen el nombre de la cuenta.
+- Si la cuenta de Vercel lleva tu nombre, puedes crear un equipo (team) con el nombre de la agencia y publicar el proyecto ahí.
+
 ## Estructura
 
 ```
