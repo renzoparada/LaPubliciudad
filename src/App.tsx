@@ -42,7 +42,8 @@ export default function App() {
           </span>
         </a>
         <nav>
-          {route.startsWith("/agencia") ? <a href="#/">Formulario del cliente</a> : <a href="#/agencia">Panel de agencia</a>}
+          {/* El panel de la agencia no se enlaza desde las páginas del cliente: se entra directo por /#/agencia */}
+          {route.startsWith("/agencia") && <a href="#/">Formulario del cliente</a>}
         </nav>
       </header>
       {page}

@@ -8,7 +8,7 @@ Web app donde los clientes potenciales completan el **brief de marketing y comun
 - **Alcance y cotización**: módulos sugeridos (lo que pidió el cliente + lo que recomienda el diagnóstico) con horas editables y tarifa.
 - **Propuesta estratégica con IA** (Claude): un borrador completo de la propuesta en Markdown, listo para la presentación.
 
-El cliente, al terminar, ve su **diagnóstico preliminar** (sin la estrategia ni la cotización).
+El cliente, al terminar, solo ve un mensaje de agradecimiento: el diagnóstico, la estrategia y la cotización quedan únicamente en el panel de la agencia.
 
 Los cambios respecto al brief original están en [docs/brief-mejorado.md](docs/brief-mejorado.md).
 
@@ -18,8 +18,8 @@ Los cambios respecto al brief original están en [docs/brief-mejorado.md](docs/b
 |---|---|
 | `/#/` | Portada para el cliente |
 | `/#/brief` | Formulario por pasos (se guarda solo en el navegador del cliente) |
-| `/#/gracias` | Diagnóstico preliminar del cliente |
-| `/#/agencia` | Panel de la agencia: importar briefs (.json), ver diagnóstico, estrategia, herramientas, cotización y generar la propuesta con IA |
+| `/#/gracias` | Mensaje de agradecimiento al cliente |
+| `/#/agencia` | Panel de la agencia (no está enlazado desde las páginas del cliente; entra con la dirección directa): importar briefs (.json), ver diagnóstico, estrategia, herramientas, cotización y generar la propuesta con IA |
 
 ## Desarrollo
 

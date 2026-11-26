@@ -149,6 +149,8 @@ textarea { resize: vertical; min-height: 84px; }
 .center-page { text-align: center; padding: 80px 16px; }
 .center-page .lead { margin: 0 auto 1em; }
 .thanks { text-align: center; }
+.thanks-page { max-width: 720px; margin: 0 auto; padding-top: clamp(60px, 12vw, 140px); }
+.thanks-page .hero-cta { justify-content: center; }
 .thanks .lead { margin: 0 auto; }
 .thanks .hero-cta { justify-content: center; }
 

@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from "react";
 import type { BriefSubmission } from "../brief/types";
-import { diagnose } from "../engine/diagnosis";
 import { buildStrategy } from "../engine/strategy";
 import { downloadJson, emptySubmission, loadLibrary, parseSubmission, removeFromLibrary, saveToLibrary } from "../brief/storage";
 import { SAMPLE_ANSWERS } from "../brief/sample";
@@ -18,8 +17,8 @@ export function Landing({ hasDraft, onStart, onResume }: { hasDraft: boolean; on
           <span className="accent">Nosotros diseñamos la estrategia.</span>
         </h1>
         <p className="lead">
-          Responde este brief en unos 20 a 30 minutos. Con tus respuestas preparamos un diagnóstico de tu marketing y una propuesta a medida, con las metodologías y
-          herramientas de las grandes agencias del mundo.
+          Responde este brief en unos 20 a 30 minutos. Con tus respuestas nuestro equipo prepara una propuesta a medida, con las metodologías y herramientas de las
+          grandes agencias del mundo.
         </p>
         <div className="hero-cta">
           {hasDraft ? (
@@ -41,7 +40,7 @@ export function Landing({ hasDraft, onStart, onResume }: { hasDraft: boolean; on
       </section>
       <section className="benefits">
         {[
-          ["🔎", "Diagnóstico inicial", "Medimos la madurez de tu marketing en 6 dimensiones y te mostramos tus oportunidades más rápidas."],
+          ["🔎", "Diagnóstico inicial", "Analizamos la madurez de tu marketing e identificamos tus oportunidades más rápidas."],
           ["🧭", "Estrategia a medida", "Pilares, embudo, mezcla de canales, plan de contenidos y hoja de ruta de 90 días."],
           ["🧰", "Herramientas y recursos", "El stack de herramientas de marketing, publicidad y medición adecuado a tu tamaño y presupuesto."],
           ["📄", "Propuesta y cotización", "Un alcance claro y una oferta a medida, sin servicios que no necesitas."],
@@ -62,7 +61,7 @@ export function Landing({ hasDraft, onStart, onResume }: { hasDraft: boolean; on
             <strong>Completas el brief</strong> por secciones, a tu ritmo.
           </li>
           <li>
-            <strong>Recibes tu diagnóstico preliminar</strong> al instante.
+            <strong>Analizamos tu información</strong> y preparamos la estrategia.
           </li>
           <li>
             <strong>Agendamos una reunión</strong> para presentarte la estrategia y la propuesta.
@@ -74,39 +73,26 @@ export function Landing({ hasDraft, onStart, onResume }: { hasDraft: boolean; on
 }
 
 export function ThankYou({ sub, delivered }: { sub: BriefSubmission | null; delivered: boolean }) {
-  const dx = useMemo(() => (sub ? diagnose(sub.answers) : null), [sub]);
-  if (!sub || !dx)
-    return (
-      <div className="center-page">
-        <h1>¡Gracias!</h1>
-        <button className="btn primary" onClick={() => navigate("/")}>
+  const nombre = String(sub?.answers.contacto_nombre || "").split(" ")[0];
+  return (
+    <div className="center-page thanks-page">
+      <p className="eyebrow">Brief recibido</p>
+      <h1>¡Gracias por completar la información{nombre ? `, ${nombre}` : ""}! 🙌</h1>
+      <p className="lead">
+        {delivered || !sub
+          ? "Nuestro equipo revisará tus respuestas y se pondrá en contacto contigo muy pronto."
+          : "No pudimos enviar tus respuestas automáticamente. Descarga tu copia y envíanosla por email; con eso ya podemos empezar."}
+      </p>
+      <div className="hero-cta">
+        {sub && !delivered && (
+          <button className="btn primary" onClick={() => downloadJson(sub)}>
+            Descargar mi copia
+          </button>
+        )}
+        <button className="btn ghost" onClick={() => navigate("/")}>
           Volver al inicio
         </button>
       </div>
-    );
-  const nombre = String(sub.answers.contacto_nombre || "").split(" ")[0];
-  return (
-    <div className="report">
-      <section className="panel thanks">
-        <p className="eyebrow">Brief recibido</p>
-        <h1>¡Gracias{nombre ? `, ${nombre}` : ""}! 🎉</h1>
-        <p className="lead">
-          {delivered
-            ? "Recibimos tu brief. Nuestro equipo lo analizará y te contactará para presentarte la estrategia y la propuesta a medida."
-            : "No pudimos enviar tu brief automáticamente. Descarga tu copia y envíanosla por email; con eso ya podemos empezar."}
-        </p>
-        <div className="hero-cta no-print">
-          <button className={`btn ${delivered ? "ghost" : "primary"}`} onClick={() => downloadJson(sub)}>
-            Descargar mi copia
-          </button>
-          <button className="btn ghost" onClick={() => window.print()}>
-            Imprimir / PDF
-          </button>
-        </div>
-      </section>
-      <h2 className="section-title">Tu diagnóstico preliminar</h2>
-      <DiagnosisView dx={dx} detailed={false} />
-      <p className="muted small center">Este diagnóstico es automático y preliminar. En la reunión lo profundizamos con nuestro equipo.</p>
     </div>
   );
 }
