@@ -58,6 +58,10 @@ export async function POST(request: Request): Promise<Response> {
     }
   }
 
-  if (!stored && !forwarded) return Response.json({ ok: false, error: "not_saved" }, { status: 503 });
+  if (!stored && !forwarded) {
+    console.error(`Brief ${id} NO guardado (sin almacenamiento ni webhook disponibles)`);
+    return Response.json({ ok: false, error: "not_saved" }, { status: 503 });
+  }
+  console.log(`Brief ${id} recibido · guardado=${stored} · webhook=${forwarded}`);
   return Response.json({ ok: true, stored, forwarded });
 }
